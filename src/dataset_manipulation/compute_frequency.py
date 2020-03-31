@@ -9,10 +9,6 @@ with open("../../resources/char_pinyinList_dict.json") as in_file:
     char_pinyin = json.load(in_file)
     in_file.close()
 
-with open("../../resources/pinyin_charList_dict.json") as in_file:
-    pinyin_char = json.load(in_file)
-    in_file.close()
-
 
 def calc_freq1char():
     freq1char = {}
@@ -25,61 +21,70 @@ def calc_freq1char():
         for char in sentence:
             if char in freq1char:
                 freq1char[char] += 1
+    s = 0
+    for i in freq1char.values():
+        s += i
+    for i in freq1char:
+        freq1char[i] /= s
     with open("../../statistics/freq1char.json", 'w') as out_file:
         json.dump(freq1char, out_file)
         out_file.close()
 
 
-def calc_freq2char_by_sentence():
-    global char_pinyin, pinyin_char
-    freq2char_sentence = {}
+def calc_freq2char(datatype):
+    freq2char = {'E': {}}
     for char in char_pinyin.keys():
-        freq2char_sentence[char] = {}
-    with open("../../resources/sentence_list.json") as in_file:
-        sentence_list = json.load(in_file)
+        freq2char[char] = {}
+    with open("../../resources/" + datatype + "_list.json") as in_file:
+        data_list = json.load(in_file)
         in_file.close()
-    for sentence in sentence_list:
-        for i in range(0, len(sentence) - 1):
-            if sentence[i] in freq2char_sentence and sentence[i + 1] in freq2char_sentence:
-                if sentence[i] in freq2char_sentence[sentence[i + 1]]:
-                    freq2char_sentence[sentence[i + 1]][sentence[i]] += 1
+    for data in data_list:
+        data_len = len(data)
+        if data_len > 0:
+            if data[0] in freq2char:
+                if 'S' in freq2char[data[0]]:
+                    freq2char[data[0]]['S'] += 1
                 else:
-                    freq2char_sentence[sentence[i + 1]][sentence[i]] = 1
+                    freq2char[data[0]]['S'] = 1
 
-    with open("../../statistics/freq2char_sentence.json", 'w') as out_file:
-        json.dump(freq2char_sentence, out_file)
-        out_file.close()
-
-
-def calc_freq2char_by_word():
-    global char_pinyin, pinyin_char
-    freq2char_word = {}
-    for char in char_pinyin.keys():
-        freq2char_word[char] = {}
-    with open("../../resources/word_list.json") as in_file:
-        word_list = json.load(in_file)
-        in_file.close()
-    for word in word_list:
-        word_len = len(word)
-        i = 1
-        while i < word_len and word[i - 1] not in freq2char_word:
-            i += 1
-        while i < word_len:
-            if word[i] in freq2char_word:
-                if word[i - 1] in freq2char_word[word[i]]:
-                    freq2char_word[word[i]][word[i - 1]] += 1
-                else:
-                    freq2char_word[word[i]][word[i - 1]] = 1
-            else:
+            i = 1
+            while i < data_len and data[i - 1] not in freq2char:
                 i += 1
-            i += 1
+            while i < data_len:
+                if data[i] in freq2char:
+                    if data[i - 1] in freq2char[data[i]]:
+                        freq2char[data[i]][data[i - 1]] += 1
+                    else:
+                        freq2char[data[i]][data[i - 1]] = 1
+                else:
+                    i += 1
+                i += 1
 
-    with open("../../statistics/freq2char_word.json", 'w') as out_file:
-        json.dump(freq2char_word, out_file)
+            if i == data_len:
+                if data[-1] in freq2char['E']:
+                    freq2char['E'][data[-1]] += 1
+                else:
+                    freq2char['E'][data[-1]] = 1
+
+    freq1char = {}
+    for i in freq2char:
+        for j in freq2char[i]:
+            if j in freq1char:
+                freq1char[j] += freq2char[i][j]
+            else:
+                freq1char[j] = freq2char[i][j]
+    for i in freq2char:
+        for j in freq2char[i]:
+            freq2char[i][j] /= freq1char[j]
+
+    with open("../../statistics/freq2char_" + datatype + ".json", 'w') as out_file:
+        json.dump(freq2char, out_file)
         out_file.close()
+
+    return freq2char
 
 
 if __name__ == "__main__":
     # calc_freq1char()
-    # calc_freq2char_by_sentence()
-    calc_freq2char_by_word()
+    freq2sentence = calc_freq2char('sentence')
+    freq2word = calc_freq2char('word')
