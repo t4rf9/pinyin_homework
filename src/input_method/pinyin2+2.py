@@ -10,7 +10,7 @@ with open("../../statistics/freq1char.json") as in_file:
     freq1 = json.load(in_file)
     in_file.close()
 
-with open("../../statistics/freq2char_sentence.json") as in_file:
+with open("../../statistics/freq2char_sentence_S_E.json") as in_file:
     freq2_sentence = json.load(in_file)
     in_file.close()
 
@@ -28,36 +28,37 @@ def generate_output(pinyin_list, depth):
     global freq1, freq2_sentence, pinyin_dict
     length = len(pinyin_list)
 
-    dp_lists = [[]]
+    dp_lists = [{}]
     for curr_char in pinyin_dict[pinyin_list[0]]:
-        dp_lists[-1].append((curr_char, smoothing(freq1[curr_char],
-                                                  freq2_sentence[curr_char]['S']
-                                                  if 'S' in freq2_sentence[curr_char] else 0)))
+        dp_lists[-1][curr_char] = [(curr_char, smoothing(freq1[curr_char],
+                                                         freq2_sentence[curr_char]['S']
+                                                         if 'S' in freq2_sentence[curr_char] else 0))]
 
     for i in range(1, min(depth, length)):
-        dp_lists.append([])
+        dp_lists.append({})
         for curr_char in pinyin_dict[pinyin_list[i]]:
-            for prev_str, prev_freq in dp_lists[-2]:
-                # print("dp_lists[-2]:\t", dp_lists[-2])
-                dp_lists[-1].append((prev_str + curr_char,
-                                     prev_freq * smoothing(freq1[curr_char], freq2_sentence[curr_char][prev_str[-1]]
-                                     if prev_str[-1] in freq2_sentence[curr_char] else 0)))
+            dp_lists[-1][curr_char] = []
+            for prev_char_dict in dp_lists[-2].values():
+                for prev_str, prev_freq in prev_char_dict:
+                    dp_lists[-1][curr_char].append((prev_str + curr_char,
+                                                    prev_freq * smoothing(
+                                                        freq1[curr_char],
+                                                        freq2_sentence[curr_char][prev_str[-1]]
+                                                        if prev_str[-1] in freq2_sentence[curr_char] else 0)))
 
     for i in range(depth, length):
-        dp_lists.append([])
+        # first create a new column, move on 1 character
+        dp_lists.append({})
         for curr_char in pinyin_dict[pinyin_list[i]]:
-            max_str_freq = ['', 0]
-            # print("prev1_str_list:\t", prev1_str_list)
-            for prev_str, prev_freq in prev1_str_list:
-                # print("prev_str:\t", prev_str)
+
+            for prev_str, prev_freq in dp_lists[-1]:
                 curr_freq = prev_freq * smoothing(freq1[curr_char],
                                                   freq2_sentence[curr_char][prev_str[-1]]
                                                   if prev_str[-1] in freq2_sentence[curr_char] else 0)
                 if curr_freq > max_str_freq[1]:
-                    max_str_freq = [prev_str + curr_char, curr_freq]
+                    max_str_freq = (prev_str + curr_char, curr_freq)
             if max_str_freq[0] != '':
-                curr_str_list.append(max_str_freq)
-
+                dp_lists[-1].append(max_str_freq)
 
         del dp_lists[0]
 
@@ -107,7 +108,7 @@ def main(in_filename, out_filename=''):
 
     out_str = ''
     for line in in_lines:
-        out_str += generate_output(line.strip().lower().split(), 3) + '\n'
+        out_str += generate_output(line.strip().lower().split(), 2) + '\n'
 
     try:
         output_file = open(out_filename, 'w')

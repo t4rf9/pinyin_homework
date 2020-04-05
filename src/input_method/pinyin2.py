@@ -8,10 +8,11 @@ import json
 
 
 def smoothing(p1, p2):
-    # sentence s e :    l = 0.08, 0.7997
+    # sentence s e :    l = 0.08, 0.8       0.3287
+    # sentence s   :    l = 0.08, 0.7986    0.3203
     # word         :    l = 0.40, 0.7396
     # word s e     :
-    l = 0.083
+    l = 0.08
     return l * p1 + (1 - l) * p2
 
 
@@ -79,12 +80,12 @@ def calc_accuracy(stdout_filename, out_filename):
     return accurate_char / total_char, accurate_line / total_line
 
 
-def main(in_filename, out_filename='', stdout_filename='', count_method='sentence', s=True, e=False):
+def main(in_filename, out_filename='', stdout_filename='', count_method='sentence', s=True, e=True):
     with open("../../statistics/freq1char.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
 
-    with open("../../statistics/freq2char_" + count_method + ('_S' if s else '') + ('_E' if s else '') + ".json") \
+    with open("../../statistics/freq2char_" + count_method + ('_S' if s else '') + ('_E' if e else '') + ".json") \
             as freq2_file:
         freq2 = json.load(freq2_file)
         freq2_file.close()

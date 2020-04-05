@@ -3,7 +3,7 @@
 
 __author__ = 'ZX'
 
-with open("../../data/input_origin.txt") as origin:
+with open("../../data/std_input_origin.txt") as origin:
     with open("../../data/std_input.txt", 'w') as std_input:
         with open("../../data/std_output.txt", 'w') as std_output:
             for line in origin.readlines():
