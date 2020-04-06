@@ -81,11 +81,11 @@ def calc_accuracy(stdout_filename, out_filename):
 
 
 def main(in_filename, out_filename='', stdout_filename='', count_method='sentence', s=True, e=True):
-    with open("../../statistics/freq1char.json") as freq1_file:
+    with open("../../statistics/freq1.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
 
-    with open("../../statistics/freq2char_" + count_method + ('_S' if s else '') + ('_E' if e else '') + ".json") \
+    with open("../../statistics/freq2_" + count_method + ('_S' if s else '') + ('_E' if e else '') + ".json") \
             as freq2_file:
         freq2 = json.load(freq2_file)
         freq2_file.close()
