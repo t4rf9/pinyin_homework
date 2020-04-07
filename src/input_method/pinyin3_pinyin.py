@@ -5,6 +5,25 @@ __author__ = 'ZX'
 
 import sys
 import json
+import heapq as HQ
+
+
+class StrWithPinyinAndFreq:
+    def __init__(self, _str_pinyin_list, _freq):
+        self.str_pinyin_list = _str_pinyin_list
+        self.freq = _freq
+
+    def __lt__(self, other):
+        return self.freq < other.freq
+
+    def __le__(self, other):
+        return self.freq <= other.freq
+
+    def __gt__(self, other):
+        return self.freq > other.freq
+
+    def __ge__(self, other):
+        return self.freq >= other.freq
 
 
 def smoothing2(p1, p2):
@@ -13,100 +32,126 @@ def smoothing2(p1, p2):
 
 
 def smoothing3(p1, p2, p3):
-    # sentence  s e
-    #                   l1 = 5e-5, l2 = 0.12, 0.8657, 0.5181
-    #                   l1 = 5e-50, l2 = 0.12, 0.8736, 0.5292
-    #                   l1 = 1e-50, l2 = 0.86, 0.8775, 0.5460
+    # choice_num = 1, p2
+    #                   l1 = 1e-30, l2 = 1-l1, 0.8, 0.2981
+    #                   l1 = 1e-30, l2 = 0.95, 0.8976, 0.5905
+    #                   l1 = 1e-30, l2 = 0.9, 0.9015, 0.6156
+    #                   l1 = 1e-30, l2 = 0.88, 0.9015, 0.6184
+    #                   l1 = 1e-30, l2 = 0.87, 0.9013, 0.6128
+    #                   l1 = 1e-30, l2 = 0.86, 0.9013, 0.6128
+    #                   l1 = 1e-30, l2 = 0.85, 0.9015, 0.6156
+    #                   l1 = 1e-30, l2 = 0.8, 0.9010, 0.6156
+    #                   l1 = 1e-30, l2 = 0.7, 0.9007, 0.6156
+    #                   l1 = 1e-30, l2 = 0.6, 0.8993, 0.6156
+    #                   l1 = 1e-30, l2 = 0.5, 0.8999, 0.6184
+    #                   l1 = 1e-30, l2 = 0.4, 0.8996, 0.6156
+    #                   l1 = 1e-30, l2 = 0.3, 0.8990, 0.6156
+    #                   l1 = 1e-30, l2 = 0.2, 0.8979, 0.6156
+    #                   l1 = 1e-30, l2 = 0.1, 0.8940, 0.6017
+    #                   l1 = 1e-30, l2 = 1e-2, 0.8926, 0.5961
+    #                   l1 = 1e-30, l2 = 0, 0.8845, 0.5710
 
+    # choice_num = 5
+    #                   l1 = 1e-30, l2 = 0.5, 0.8985, 0.5933
+    #                   l1 = 1e-30, l2 = 0.1, 0.9013, 0.6156
+    #                   l1 = 1e-30, l2 = 0.07, 0.9018, 0.6184
+    #                   l1 = 1e-30, l2 = 0.065, 0.9024, 0.6240
+    #                   l1 = 1e-30, l2 = 0.062, 0.9032, 0.6240
+    #                   l1 = 1e-30, l2 = 0.061, 0.9032, 0.6240
+    #                   l1 = 1e-30, l2 = 0.0605, 0.9029, 0.6240
+    #                   l1 = 1e-30, l2 = 0.06, 0.9032, 0.6267
+    #                   l1 = 1e-30, l2 = 0.0595, 0.9032, 0.6267
+    #                   l1 = 1e-30, l2 = 0.059, 0.9024, 0.6267
+    #                   l1 = 1e-30, l2 = 0.058, 0.9024, 0.6267
+    #                   l1 = 1e-30, l2 = 0.055, 0.9021, 0.6267
+    #                   l1 = 1e-30, l2 = 0.05, 0.9021, 0.6267
+    #                   l1 = 1e-30, l2 = 0.04, 0.9013, 0.6267
+    #                   l1 = 1e-30, l2 = 0.03, 0.9010, 0.6295
+    #                   l1 = 1e-30, l2 = 0.01, 0.8987, 0.6184
+    #                   l1 = 1e-30, l2 = 0.005, 0.8979, 0.6156
+    #                   l1 = 1e-30, l2 = 0.001, 0.8957, 0.6072
+
+    # choice_num = 10
+    #                   l1 = 1e-30, l2 = 0.060, 0.9041, 0.6267
     l1 = 1e-30
-    l2 = 0.86
+    l2 = 0.06
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
-def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
+def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=10):
     length = len(pinyin_list)
 
     curr_str_pinyin_freq_list = []
     for curr_char in pinyin_dict[pinyin_list[0]]:
         curr_char_pinyin = curr_char + '_' + pinyin_list[0]
-        curr_str_pinyin_freq_list.append([
+        curr_str_pinyin_freq_list.append(StrWithPinyinAndFreq(
             ['S_S', curr_char_pinyin],
             smoothing2(freq1[curr_char_pinyin],
                        freq2[curr_char_pinyin]['S_S'] if 'S_S' in freq2[curr_char_pinyin] else 0)
-        ])
+        ))
 
-    prev_str_pinyin_freq_list = curr_str_pinyin_freq_list.copy()
+    prev_str_pinyin_freq_list = curr_str_pinyin_freq_list
     curr_str_pinyin_freq_list = []
     for curr_char in pinyin_dict[pinyin_list[1]]:
         curr_char_pinyin = curr_char + '_' + pinyin_list[1]
-        max_str_freq = [[], 0]
-        for prev_str_pinyin_list, prev_freq in prev_str_pinyin_freq_list:
-            # print("prev_str_pinyin_list:\t", prev_str_pinyin_list)
-            prev_str_pinyin2 = prev_str_pinyin_list[-2] + ' ' + prev_str_pinyin_list[-1]
+        StrWithPinyinAndFreq_queue = []
+        for prev in prev_str_pinyin_freq_list:
+            prev_str_pinyin2 = prev.str_pinyin_list[-2] + ' ' + prev.str_pinyin_list[-1]
             curr_freq = \
-                prev_freq * \
+                prev.freq * \
                 smoothing3(freq1[curr_char_pinyin],
-                           (freq2[curr_char_pinyin][prev_str_pinyin_list[-1]] *
-                            freq2[prev_str_pinyin_list[-1]][prev_str_pinyin_list[-2]])
-                           if prev_str_pinyin_list[-1] in freq2[curr_char_pinyin]
-                              and prev_str_pinyin_list[-2] in freq2[prev_str_pinyin_list[-1]] else 0,
+                           freq2[curr_char_pinyin][prev.str_pinyin_list[-1]]
+                           if prev.str_pinyin_list[-1] in freq2[curr_char_pinyin] else 0,
                            freq3[curr_char_pinyin][prev_str_pinyin2]
                            if prev_str_pinyin2 in freq3[curr_char_pinyin] else 0
                            )
-            if curr_freq > max_str_freq[1]:
-                max_str_freq = [prev_str_pinyin_list + [curr_char_pinyin], curr_freq]
 
-        if max_str_freq[0]:
-            curr_str_pinyin_freq_list.append(max_str_freq)
+            HQ.heappush(StrWithPinyinAndFreq_queue,
+                        StrWithPinyinAndFreq(prev.str_pinyin_list + [curr_char_pinyin], curr_freq))
+            if len(StrWithPinyinAndFreq_queue) > choice_num:
+                HQ.heappop(StrWithPinyinAndFreq_queue)
+
+        curr_str_pinyin_freq_list += StrWithPinyinAndFreq_queue
 
     for i in range(2, length):
-        prev_str_pinyin_freq_list = curr_str_pinyin_freq_list.copy()
+        prev_str_pinyin_freq_list = curr_str_pinyin_freq_list
         curr_str_pinyin_freq_list = []
-        # print(pinyin_list)
         for curr_char in pinyin_dict[pinyin_list[i]]:
             curr_char_pinyin = curr_char + '_' + pinyin_list[i]
-            max_str_freq = [[], 0]
-            # print("prev1_str_list:\t", prev1_str_list)
-            for prev_str_pinyin_list, prev_freq in prev_str_pinyin_freq_list:
-                # print("prev_str:\t", prev_str)
-                prev_str_pinyin2 = prev_str_pinyin_list[-2] + ' ' + prev_str_pinyin_list[-1]
+            StrWithPinyinAndFreq_queue = []
+            for prev in prev_str_pinyin_freq_list:
+                prev_str_pinyin2 = prev.str_pinyin_list[-2] + ' ' + prev.str_pinyin_list[-1]
                 curr_freq = \
-                    prev_freq * \
+                    prev.freq * \
                     smoothing3(freq1[curr_char_pinyin],
-                               (freq2[curr_char_pinyin][prev_str_pinyin_list[-1]] *
-                                freq2[prev_str_pinyin_list[-1]][prev_str_pinyin_list[-2]])
-                               if prev_str_pinyin_list[-1] in freq2[curr_char_pinyin]
-                                  and prev_str_pinyin_list[-2] in freq2[prev_str_pinyin_list[-1]]
-                               else 0,
+                               freq2[curr_char_pinyin][prev.str_pinyin_list[-1]]
+                               if prev.str_pinyin_list[-1] in freq2[curr_char_pinyin] else 0,
                                freq3[curr_char_pinyin][prev_str_pinyin2]
                                if prev_str_pinyin2 in freq3[curr_char_pinyin] else 0
                                )
-                if curr_freq > max_str_freq[1]:
-                    max_str_freq = [prev_str_pinyin_list + [curr_char_pinyin], curr_freq]
-            if max_str_freq[0]:
-                curr_str_pinyin_freq_list.append(max_str_freq)
 
-    for curr_str_pinyin_list, curr_freq in curr_str_pinyin_freq_list:
-        curr_str_pinyin2 = curr_str_pinyin_list[-2] + ' ' + curr_str_pinyin_list[-1]
-        curr_freq *= \
+                HQ.heappush(StrWithPinyinAndFreq_queue,
+                            StrWithPinyinAndFreq(prev.str_pinyin_list + [curr_char_pinyin], curr_freq))
+                if len(StrWithPinyinAndFreq_queue) > choice_num:
+                    HQ.heappop(StrWithPinyinAndFreq_queue)
+            curr_str_pinyin_freq_list += StrWithPinyinAndFreq_queue
+
+    for curr in curr_str_pinyin_freq_list:
+        curr_str_pinyin2 = curr.str_pinyin_list[-2] + ' ' + curr.str_pinyin_list[-1]
+        curr.freq *= \
             smoothing3(
                 1,
-                (freq2['E_E'][curr_str_pinyin_list[-1]] *
-                 freq2[curr_str_pinyin_list[-1]][curr_str_pinyin_list[-2]])
-                if curr_str_pinyin_list[-1] in freq2['E_E']
-                   and curr_str_pinyin_list[-2] in freq2[curr_str_pinyin_list[-1]]
-                else 0,
+                freq2['E_E'][curr.str_pinyin_list[-1]]
+                if curr.str_pinyin_list[-1] in freq2['E_E'] else 0,
                 freq3['E_E'][curr_str_pinyin2]
                 if curr_str_pinyin2 in freq3['E_E'] else 0
             )
 
-    output_str_pinyin_list = [[], 0]
-    for curr_str_pinyin_list, curr_freq in curr_str_pinyin_freq_list:
-        if curr_freq > output_str_pinyin_list[1]:
-            output_str_pinyin_list = [curr_str_pinyin_list, curr_freq]
+    HQ.heapify(curr_str_pinyin_freq_list)
 
+    StrWithPinyinAndFreq_output = HQ.nlargest(1, curr_str_pinyin_freq_list)[0]
     output_str = ''
-    for char_pinyin in output_str_pinyin_list[0][1:]:
+    for char_pinyin in StrWithPinyinAndFreq_output.str_pinyin_list[1:]:
         output_str += char_pinyin[0]
     return output_str
 

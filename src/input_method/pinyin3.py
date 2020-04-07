@@ -72,8 +72,8 @@ def smoothing3(p1, p2, p3):
     #                   l1 = 1e-20,  l2 = 1e-13, 0.8685, 0.5265
     #                   l1 = 1e-20,  l2 = 1e-15, 0.8679, 0.5209
 
-    l1 = 0.08
-    l2 = 1 - l1
+    l1 = 1e-30
+    l2 = 0.86
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
@@ -87,7 +87,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
             smoothing2(freq1[curr_char], freq2[curr_char]['S'] if 'S' in freq2[curr_char] else 0)
         ])
 
-    prev_str_list = curr_str_list.copy()
+    prev_str_list = curr_str_list
     curr_str_list = []
     for curr_char in pinyin_dict[pinyin_list[1]]:
         max_str_freq = ['', 0]
