@@ -16,7 +16,7 @@ def smoothing(p1, p2):
     return l * p1 + (1 - l) * p2
 
 
-def generate_output(pinyin_list, freq1, freq2, pinyin_dict, s, e):
+def generate_output(pinyin_list, freq1, freq2, pinyin_dict):
     length = len(pinyin_list)
 
     curr_str_list = []
@@ -24,7 +24,7 @@ def generate_output(pinyin_list, freq1, freq2, pinyin_dict, s, e):
         curr_str_list.append(
             [curr_char,
              smoothing(freq1[curr_char], freq2[curr_char]['S'] if 'S' in freq2[curr_char] else 0)
-             if s else freq1[curr_char]])
+             ])
 
     for i in range(1, length):
         prev_str_list = curr_str_list.copy()
@@ -43,9 +43,8 @@ def generate_output(pinyin_list, freq1, freq2, pinyin_dict, s, e):
             if max_str_freq[0] != '':
                 curr_str_list.append(max_str_freq)
 
-    if e:
-        for curr_str, curr_freq in curr_str_list:
-            curr_freq *= freq2['E'][curr_str[-1]] if curr_str[-1] in freq2['E'] else 0
+    for curr_str, curr_freq in curr_str_list:
+        curr_freq *= freq2['E'][curr_str[-1]] if curr_str[-1] in freq2['E'] else 0
 
     output = ['', 0]
     for curr in curr_str_list:
@@ -80,12 +79,12 @@ def calc_accuracy(stdout_filename, out_filename):
     return accurate_char / total_char, accurate_line / total_line
 
 
-def main(in_filename, out_filename='', stdout_filename='', count_method='sentence', s=True, e=True):
+def main(in_filename, out_filename='', stdout_filename='', count_method='sentence'):
     with open("../../statistics/freq1.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
 
-    with open("../../statistics/freq2_" + count_method + ('_S' if s else '') + ('_E' if e else '') + ".json") \
+    with open("../../statistics/freq2_" + count_method + "_S_E.json") \
             as freq2_file:
         freq2 = json.load(freq2_file)
         freq2_file.close()
@@ -107,7 +106,7 @@ def main(in_filename, out_filename='', stdout_filename='', count_method='sentenc
             elif line_list[i] == 'nue':
                 line_list[i] = 'nve'
 
-        out_str += generate_output(line_list, freq1, freq2, pinyin_dict, s, e) + '\n'
+        out_str += generate_output(line_list, freq1, freq2, pinyin_dict) + '\n'
 
     try:
         output_file = open(out_filename, 'w')

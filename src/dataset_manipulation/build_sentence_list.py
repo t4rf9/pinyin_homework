@@ -7,6 +7,11 @@ import json
 import os
 import re
 
+
+def isChinese(char):
+    return u'\u4e00' <= char <= u'\u9fa5'
+
+
 # read in news data
 article_list = []
 os.chdir('../../resources/sina_news_gbk')
@@ -32,7 +37,7 @@ for article in article_list:
 del article_list
 
 # cut and filter non-Chinese characters
-non_Chinese = re.compile("[a-zA-Z0-9，。？：/【】「」；·～！@#¥%…&*（）—+\-=、｜|{}\[\]\"\':;,.<>?《》~`!$^()“” ]+")
+non_Chinese = re.compile("[^\u4e00-\u9fa5]+")
 sentence_list = []
 for data in data_str_list:
     sentence_list.extend(re.split(non_Chinese, data))

@@ -32,7 +32,7 @@ for article in article_list:
 del article_list
 
 # cut and filter non-Chinese characters
-non_Chinese = re.compile("[a-zA-Z0-9，。？：/【】「」；·～！@#¥%…&*（）—+\-=、｜|{}\[\]\"\':;,.<>?《》~`!$^()“” ]+")
+non_Chinese = re.compile("[^\u4e00-\u9fa5]+")
 word_list = []
 for data in data_str_list:
     tmp_word_list = jieba.lcut(data)
