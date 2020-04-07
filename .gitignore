@@ -138,3 +138,4 @@ dmypy.json
 resources/.DS_Store
 src/.DS_Store
 /resources/sentence_list.json
+/statistics/*.json

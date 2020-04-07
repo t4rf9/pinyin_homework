@@ -1,6 +1,0 @@
-freq2_sentence_S.json filter=lfs diff=lfs merge=lfs -text
-freq2_sentence_S_E.json filter=lfs diff=lfs merge=lfs -text
-freq2_word.json filter=lfs diff=lfs merge=lfs -text
-freq2_word_S_E.json filter=lfs diff=lfs merge=lfs -text
-freq3_sentence_S_E.json filter=lfs diff=lfs merge=lfs -text
-freq1.json filter=lfs diff=lfs merge=lfs -text
