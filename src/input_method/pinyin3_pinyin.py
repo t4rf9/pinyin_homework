@@ -51,6 +51,10 @@ def smoothing3(p1, p2, p3):
     #                   l1 = 1e-30, l2 = 1e-2, 0.8926, 0.5961
     #                   l1 = 1e-30, l2 = 0, 0.8845, 0.5710
 
+    # choice_num = 3
+    #                   l1 = 1e-30, l2 = 0.07, 0.9021, 0.6240
+    #                   l1 = 1e-30, l2 = 0.06, 0.9024, 0.6295
+
     # choice_num = 5
     #                   l1 = 1e-30, l2 = 0.5, 0.8985, 0.5933
     #                   l1 = 1e-30, l2 = 0.1, 0.9013, 0.6156
@@ -71,14 +75,26 @@ def smoothing3(p1, p2, p3):
     #                   l1 = 1e-30, l2 = 0.005, 0.8979, 0.6156
     #                   l1 = 1e-30, l2 = 0.001, 0.8957, 0.6072
 
-    # choice_num = 10
+    # choice_num = 6
+    #                   l1 = 1e-30, l2 = 0.060, 0.9035, 0.6267
+
+    # choice_num = 7
+    #                   l1 = 1e-30, l2 = 0.060, 0.9038, 0.6267
+
+    # choice_num = 8
+    #                   l1 = 1e-30, l2 = 0.070, 0.9038, 0.6212
     #                   l1 = 1e-30, l2 = 0.060, 0.9041, 0.6267
+
+    # choice_num = 10
+    #                   l1 = 1e-30, l2 = 0.070, 0.9038, 0.6212
+    #                   l1 = 1e-30, l2 = 0.060, 0.9041, 0.6267
+    #                   l1 = 1e-30, l2 = 0.050, 0.9038, 0.6267
     l1 = 1e-30
     l2 = 0.06
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
-def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=10):
+def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8):
     length = len(pinyin_list)
 
     curr_str_pinyin_freq_list = []
