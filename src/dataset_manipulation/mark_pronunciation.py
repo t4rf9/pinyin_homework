@@ -3,6 +3,13 @@
 
 __author__ = 'ZX'
 
+"""
+This script generates two dictionaries,
+one with all Chinese characters of interest as keys and its all pinyins in a list as the value,
+while the other with all pinyin as keys and all characters which can be paired with the pinyin as its value.
+The two dictionaries are saved in json files.
+"""
+
 import json
 
 char_dict = dict()

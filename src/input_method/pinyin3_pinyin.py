@@ -3,11 +3,20 @@
 
 __author__ = 'ZX'
 
+"""
+This script generates the Chinese output from pinyin input
+based on the model of 3-character dependency
+with the consideration of heteronyms
+by the greedy algorithm taking into account
+more than only one candidate string for each ending character.
+"""
+
 import sys
 import json
 import heapq as HQ
 
 
+# the class formed by a string of Chinese characters, its pinyin list and its appearance possibility
 class StrWithPinyinAndFreq:
     def __init__(self, _str_pinyin_list, _freq):
         self.str_pinyin_list = _str_pinyin_list
@@ -94,10 +103,20 @@ def smoothing3(p1, p2, p3):
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
+# return a Chinese string according to the pinyin_list input
+# pinyin_list: a list of the input pinyin string
+# freq1, freq2, freq3: the relative frequency of 1, 2, 3-character dependency model
+# pinyin_dict: the dictionary with pinyin as its keys and lists of Chinese characters as its values
+# choice_num: the number of strings of highest probabilities with identical last character to be considered
 def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8):
     length = len(pinyin_list)
 
+    # the list of strings with the highest probability of appearance (with all previous characters fixed)
+    # which end with each Chinese character that match the current pinyin,
+    # and the probability
     curr_str_pinyin_freq_list = []
+
+    # the first Chinese character
     for curr_char in pinyin_dict[pinyin_list[0]]:
         curr_char_pinyin = curr_char + '_' + pinyin_list[0]
         curr_str_pinyin_freq_list.append(StrWithPinyinAndFreq(
@@ -106,6 +125,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
                        freq2[curr_char_pinyin]['S_S'] if 'S_S' in freq2[curr_char_pinyin] else 0)
         ))
 
+    # the second Chinese character
     prev_str_pinyin_freq_list = curr_str_pinyin_freq_list
     curr_str_pinyin_freq_list = []
     for curr_char in pinyin_dict[pinyin_list[1]]:
@@ -122,6 +142,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
                            if prev_str_pinyin2 in freq3[curr_char_pinyin] else 0
                            )
 
+            # use priority queue to keep the choice_num strings of the highest probability of appearance
             HQ.heappush(StrWithPinyinAndFreq_queue,
                         StrWithPinyinAndFreq(prev.str_pinyin_list + [curr_char_pinyin], curr_freq))
             if len(StrWithPinyinAndFreq_queue) > choice_num:
@@ -129,6 +150,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
 
         curr_str_pinyin_freq_list += StrWithPinyinAndFreq_queue
 
+    # the following Chinese characters
     for i in range(2, length):
         prev_str_pinyin_freq_list = curr_str_pinyin_freq_list
         curr_str_pinyin_freq_list = []
@@ -146,12 +168,14 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
                                if prev_str_pinyin2 in freq3[curr_char_pinyin] else 0
                                )
 
+                # use priority queue to keep the choice_num strings of the highest probability of appearance
                 HQ.heappush(StrWithPinyinAndFreq_queue,
                             StrWithPinyinAndFreq(prev.str_pinyin_list + [curr_char_pinyin], curr_freq))
                 if len(StrWithPinyinAndFreq_queue) > choice_num:
                     HQ.heappop(StrWithPinyinAndFreq_queue)
             curr_str_pinyin_freq_list += StrWithPinyinAndFreq_queue
 
+    # the ending empty character
     for curr in curr_str_pinyin_freq_list:
         curr_str_pinyin2 = curr.str_pinyin_list[-2] + ' ' + curr.str_pinyin_list[-1]
         curr.freq *= \
@@ -163,6 +187,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
                 if curr_str_pinyin2 in freq3['E_E'] else 0
             )
 
+    # output the result string with highest probability of appearance
     HQ.heapify(curr_str_pinyin_freq_list)
 
     StrWithPinyinAndFreq_output = HQ.nlargest(1, curr_str_pinyin_freq_list)[0]
@@ -172,6 +197,7 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8)
     return output_str
 
 
+# compare the standard output file and the real output file for accuracy
 def calc_accuracy(stdout_filename, out_filename):
     with open(stdout_filename) as std_out_file:
         with open(out_filename) as out_file:

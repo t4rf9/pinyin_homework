@@ -3,6 +3,12 @@
 
 __author__ = 'ZX'
 
+"""
+This script manipulates the Chinese language materials.
+All non-Chinese characters are considered separators of Chinese 'sentences' and are excluded by the use of re.split.
+In the end, the Chinese 'sentences' are gathered in a list and saved in a json file for further usage.
+"""
+
 import json
 import os
 import re

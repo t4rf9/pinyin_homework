@@ -3,6 +3,13 @@
 
 __author__ = 'ZX'
 
+"""
+This script generates the Chinese output from pinyin input
+based on the model of 2-character dependency
+without the consideration of heteronyms
+by the greedy Viterbi algorithm.
+"""
+
 import sys
 import json
 
@@ -11,30 +18,40 @@ def smoothing(p1, p2):
     # sentence s e :    l = 0.08, 0.8       0.3287
     # sentence s   :    l = 0.08, 0.7986    0.3203
     # word         :    l = 0.40, 0.7396
-    # word s e     :
     l = 0.08
     return l * p1 + (1 - l) * p2
 
 
+# return a Chinese string according to the pinyin_list input
+# pinyin_list: a list of the input pinyin string
+# freq1, freq2: the relative frequency of 1, 2-character dependency model
+# pinyin_dict: the dictionary with pinyin as its keys and lists of Chinese characters as its values
 def generate_output(pinyin_list, freq1, freq2, pinyin_dict):
     length = len(pinyin_list)
 
+    # the list of strings with the highest probability of appearance
+    # which end with each Chinese character that match the current pinyin,
+    # and the probability
     curr_str_list = []
+
+    # the first Chinese character
     for curr_char in pinyin_dict[pinyin_list[0]]:
         curr_str_list.append(
             [curr_char,
              smoothing(freq1[curr_char], freq2[curr_char]['S'] if 'S' in freq2[curr_char] else 0)
              ])
 
+    # the following Chinese characters
     for i in range(1, length):
-        prev_str_list = curr_str_list.copy()
+        prev_str_list = curr_str_list
         curr_str_list = []
-        # print(pinyin_list)
+
+        # traverse all candidate Chinese characters for the current pinyin
         for curr_char in pinyin_dict[pinyin_list[i]]:
             max_str_freq = ['', 0]
-            # print("prev_str_list:\t", prev_str_list)
+
+            # traverse all candidate Chinese characters for the previous pinyin
             for prev_str, prev_freq in prev_str_list:
-                # print("prev_str:\t", prev_str)
                 curr_freq = prev_freq * smoothing(freq1[curr_char],
                                                   freq2[curr_char][prev_str[-1]]
                                                   if prev_str[-1] in freq2[curr_char] else 0)
@@ -43,9 +60,11 @@ def generate_output(pinyin_list, freq1, freq2, pinyin_dict):
             if max_str_freq[0] != '':
                 curr_str_list.append(max_str_freq)
 
+    # the ending empty character
     for curr_str, curr_freq in curr_str_list:
         curr_freq *= freq2['E'][curr_str[-1]] if curr_str[-1] in freq2['E'] else 0
 
+    # output the string with the highest probability
     output = ['', 0]
     for curr in curr_str_list:
         if curr[1] > output[1]:
@@ -53,6 +72,7 @@ def generate_output(pinyin_list, freq1, freq2, pinyin_dict):
     return output[0]
 
 
+# compare the standard output file and the real output file for accuracy
 def calc_accuracy(stdout_filename, out_filename):
     with open(stdout_filename) as std_out_file:
         with open(out_filename) as out_file:

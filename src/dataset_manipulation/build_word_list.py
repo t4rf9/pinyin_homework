@@ -3,6 +3,14 @@
 
 __author__ = 'ZX'
 
+"""
+This script is deprecated since the statistics of frequency based on words is not adopted in the end.
+This script manipulates the Chinese language materials.
+All non-Chinese characters are considered separators of Chinese 'sentences' and are excluded by the use of re.split.
+Next, jieba.lcut is used to cut the 'sentences' into Chinese words,
+which in the end are gathered in a list and saved in a json file for further usage.
+"""
+
 import json
 import os
 import jieba
