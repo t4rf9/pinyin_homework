@@ -14,6 +14,10 @@ more than only one candidate string for each ending character.
 import sys
 import json
 import heapq as HQ
+import time
+
+# the number of strings of highest probabilities with identical last character to be considered
+choice_num = 8
 
 
 # the class formed by a string of Chinese characters, its pinyin list and its appearance possibility
@@ -41,65 +45,8 @@ def smoothing2(p1, p2):
 
 
 def smoothing3(p1, p2, p3):
-    # choice_num = 1, p2
-    #                   l1 = 1e-30, l2 = 1-l1, 0.8, 0.2981
-    #                   l1 = 1e-30, l2 = 0.95, 0.8976, 0.5905
-    #                   l1 = 1e-30, l2 = 0.9, 0.9015, 0.6156
-    #                   l1 = 1e-30, l2 = 0.88, 0.9015, 0.6184
-    #                   l1 = 1e-30, l2 = 0.87, 0.9013, 0.6128
-    #                   l1 = 1e-30, l2 = 0.86, 0.9013, 0.6128
-    #                   l1 = 1e-30, l2 = 0.85, 0.9015, 0.6156
-    #                   l1 = 1e-30, l2 = 0.8, 0.9010, 0.6156
-    #                   l1 = 1e-30, l2 = 0.7, 0.9007, 0.6156
-    #                   l1 = 1e-30, l2 = 0.6, 0.8993, 0.6156
-    #                   l1 = 1e-30, l2 = 0.5, 0.8999, 0.6184
-    #                   l1 = 1e-30, l2 = 0.4, 0.8996, 0.6156
-    #                   l1 = 1e-30, l2 = 0.3, 0.8990, 0.6156
-    #                   l1 = 1e-30, l2 = 0.2, 0.8979, 0.6156
-    #                   l1 = 1e-30, l2 = 0.1, 0.8940, 0.6017
-    #                   l1 = 1e-30, l2 = 1e-2, 0.8926, 0.5961
-    #                   l1 = 1e-30, l2 = 0, 0.8845, 0.5710
-
-    # choice_num = 3
-    #                   l1 = 1e-30, l2 = 0.07, 0.9021, 0.6240
-    #                   l1 = 1e-30, l2 = 0.06, 0.9024, 0.6295
-
-    # choice_num = 5
-    #                   l1 = 1e-30, l2 = 0.5, 0.8985, 0.5933
-    #                   l1 = 1e-30, l2 = 0.1, 0.9013, 0.6156
-    #                   l1 = 1e-30, l2 = 0.07, 0.9018, 0.6184
-    #                   l1 = 1e-30, l2 = 0.065, 0.9024, 0.6240
-    #                   l1 = 1e-30, l2 = 0.062, 0.9032, 0.6240
-    #                   l1 = 1e-30, l2 = 0.061, 0.9032, 0.6240
-    #                   l1 = 1e-30, l2 = 0.0605, 0.9029, 0.6240
-    #                   l1 = 1e-30, l2 = 0.06, 0.9032, 0.6267
-    #                   l1 = 1e-30, l2 = 0.0595, 0.9032, 0.6267
-    #                   l1 = 1e-30, l2 = 0.059, 0.9024, 0.6267
-    #                   l1 = 1e-30, l2 = 0.058, 0.9024, 0.6267
-    #                   l1 = 1e-30, l2 = 0.055, 0.9021, 0.6267
-    #                   l1 = 1e-30, l2 = 0.05, 0.9021, 0.6267
-    #                   l1 = 1e-30, l2 = 0.04, 0.9013, 0.6267
-    #                   l1 = 1e-30, l2 = 0.03, 0.9010, 0.6295
-    #                   l1 = 1e-30, l2 = 0.01, 0.8987, 0.6184
-    #                   l1 = 1e-30, l2 = 0.005, 0.8979, 0.6156
-    #                   l1 = 1e-30, l2 = 0.001, 0.8957, 0.6072
-
-    # choice_num = 6
-    #                   l1 = 1e-30, l2 = 0.060, 0.9035, 0.6267
-
-    # choice_num = 7
-    #                   l1 = 1e-30, l2 = 0.060, 0.9038, 0.6267
-
-    # choice_num = 8
-    #                   l1 = 1e-30, l2 = 0.070, 0.9038, 0.6212
-    #                   l1 = 1e-30, l2 = 0.060, 0.9041, 0.6267
-
-    # choice_num = 10
-    #                   l1 = 1e-30, l2 = 0.070, 0.9038, 0.6212
-    #                   l1 = 1e-30, l2 = 0.060, 0.9041, 0.6267
-    #                   l1 = 1e-30, l2 = 0.050, 0.9038, 0.6267
-    l1 = 1e-30
-    l2 = 0.06
+    l1 = 0.06
+    l2 = 0.20
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
@@ -107,8 +54,7 @@ def smoothing3(p1, p2, p3):
 # pinyin_list: a list of the input pinyin string
 # freq1, freq2, freq3: the relative frequency of 1, 2, 3-character dependency model
 # pinyin_dict: the dictionary with pinyin as its keys and lists of Chinese characters as its values
-# choice_num: the number of strings of highest probabilities with identical last character to be considered
-def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict, choice_num=8):
+def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
     length = len(pinyin_list)
 
     # the list of strings with the highest probability of appearance (with all previous characters fixed)
@@ -225,6 +171,7 @@ def calc_accuracy(stdout_filename, out_filename):
 
 
 def main(in_filename, out_filename='', stdout_filename=''):
+    startTime = time.process_time()
     with open("../../statistics/freq1_pinyin.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
@@ -243,10 +190,13 @@ def main(in_filename, out_filename='', stdout_filename=''):
         pinyin_dict = json.load(pinyin_dict_file)
         pinyin_dict_file.close()
 
+    print("Load statistics data:\t", time.process_time() - startTime, " s")
+
     with open(in_filename) as input_file:
         in_lines = input_file.readlines()
         input_file.close()
 
+    startTime = time.process_time()
     out_str = ''
     for line in in_lines:
         line_list = line.strip().lower().split()
@@ -258,11 +208,16 @@ def main(in_filename, out_filename='', stdout_filename=''):
 
         out_str += generate_output(line_list, freq1, freq2, freq3, pinyin_dict) + '\n'
 
-    with open(out_filename, 'w') as output_file:
+    print("Generate the output file:\t", time.process_time() - startTime, "s\tchoice_num: ", choice_num, "\n")
+    try:
+        output_file = open(out_filename, 'w')
         output_file.write(out_str)
         output_file.close()
         if stdout_filename != '':
-            print(calc_accuracy(stdout_filename, out_filename))
+            accuracy = calc_accuracy(stdout_filename, out_filename)
+            print("Accuracy:\n\tCharacter:\t", accuracy[0], ",\tLine:\t", accuracy[1], "\n")
+    except:
+        print(out_str)
 
 
 if __name__ == "__main__":
@@ -272,3 +227,5 @@ if __name__ == "__main__":
         main(sys.argv[1], sys.argv[2])
     elif len(sys.argv) == 2:
         main(sys.argv[1])
+    else:
+        print("Usage: ", sys.argv[0], " input_file (output_file) (std_output_file)\n")

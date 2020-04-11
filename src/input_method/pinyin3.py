@@ -12,6 +12,7 @@ by the greedy algorithm.
 
 import sys
 import json
+import time
 
 
 def smoothing2(p1, p2):
@@ -20,67 +21,8 @@ def smoothing2(p1, p2):
 
 
 def smoothing3(p1, p2, p3):
-    # sentence  s e
-    #                   l1 = 0.010, l2 = 0.08, 0.8579, 0.5125
-    #                   l1 = 0.010, l2 = 0.10, 0.8582, 0.5125
-    #                   l1 = 0.010, l2 = 0.12, 0.8582, 0.5125
-    #                   l1 = 0.001, l2 = 0.10, 0.8618, 0.5153
-    #                   l1 = 0.001, l2 = 0.12, 0.8624, 0.5181
-    #                   l1 = 1e-4,  l2 = 0.12, 0.8657, 0.5209
-    #                   l1 = 1e-5,  l2 = 0.12, 0.8632, 0.5153
-    #                   l1 = 2e-5,  l2 = 0.12, 0.8638, 0.5153
-    #                   l1 = 5e-5,  l2 = 0.10, 0.8655, 0.5209
-    #                   l1 = 5e-5,  l2 = 0.11, 0.8660, 0.5209
-    #                   l1 = 5e-5,  l2 = 0.12, 0.8666, 0.5237
-    #                   l1 = 5e-5,  l2 = 0.13, 0.8655, 0.5209
-    #                   l1 = 5e-5,  l2 = 0.15, 0.8652, 0.5209
-    #                   l1 = 6e-5,  l2 = 0.12, 0.8655, 0.5209
-    #                   l1 = 8e-5,  l2 = 0.12, 0.8660, 0.5209
-    #                   l1 = 1e-25,  l2 = 0.1, 0.8699, 0.5265
-    #                   l1 = 1e-25,  l2 = 0.13, 0.8705, 0.5265
-    #                   l1 = 1e-25,  l2 = 0.14, 0.8705, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.14, 0.8705, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.15, 0.8705, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.18, 0.8705, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.2, 0.8710, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.25, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.3, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.35, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.4, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.45, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.5, 0.8727, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.55, 0.8716, 0.5265
-    #                   l1 = 1e-50,  l2 = 0.6, 0.8730, 0.5320
-    #                   l1 = 1e-50,  l2 = 0.65, 0.8727, 0.5320
-    #                   l1 = 1e-50,  l2 = 0.7, 0.8727, 0.5348
-    #                   l1 = 1e-50,  l2 = 0.8, 0.8736, 0.5432
-    #                   l1 = 1e-50,  l2 = 0.82, 0.8741, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.85, 0.8741, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.855, 0.8741, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.8575, 0.8755, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.859, 0.8755, 0.5460
-    #                   l1 = 1e-20,  l2 = 0.86, 0.8752, 0.5460
-    #                   l1 = 1e-30,  l2 = 0.86, 0.8755, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.86, 0.8755, 0.5460
-    #                   l1 = 1e-80,  l2 = 0.86, 0.8755, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.861, 0.8755, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.8625, 0.8755, 0.5460
-    #                   l1 = 1e-50,  l2 = 0.865, 0.8750, 0.5432
-    #                   l1 = 1e-50,  l2 = 0.87, 0.8741, 0.5404
-    #                   l1 = 1e-50,  l2 = 0.88, 0.8752, 0.5376
-    #                   l1 = 1e-50,  l2 = 0.9, 0.8750, 0.5404
-    #                   l1 = 1e-50,  l2 = 0.95, 0.8724, 0.5404
-    #                   l1 = 1e-25,  l2 = 1e-2, 0.8674, 0.5209
-    #                   l1 = 1e-25,  l2 = 1e-5, 0.8677, 0.5237
-    #                   l1 = 5e-50,  l2 = 0.12, 0.8699, 0.5265
-    #                   l1 = 5e-50,  l2 = 1e-15, 0.8685, 0.5292
-    #                   l1 = 1e-20,  l2 = 1e-12, 0.8680, 0.5209
-    #                   l1 = 1e-25,  l2 = 1e-12, 0.8680, 0.5209
-    #                   l1 = 1e-20,  l2 = 1e-13, 0.8685, 0.5265
-    #                   l1 = 1e-20,  l2 = 1e-15, 0.8679, 0.5209
-
-    l1 = 1e-30
-    l2 = 0.86
+    l1 = 0.05
+    l2 = 0.20
     return l1 * p1 + l2 * p2 + (1 - l1 - l2) * p3
 
 
@@ -110,9 +52,8 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
         max_str_freq = ['', 0]
         for prev_str, prev_freq in prev_str_list:
             curr_freq = prev_freq * smoothing3(freq1[curr_char],
-                                               (freq2[curr_char][prev_str[-1]] * freq2[prev_str[-1]][prev_str[-2]])
-                                               if prev_str[-1] in freq2[curr_char]
-                                                  and prev_str[-2] in freq2[prev_str[-1]] else 0,
+                                               freq2[curr_char][prev_str[-1]]
+                                               if prev_str[-1] in freq2[curr_char] else 0,
                                                freq3[curr_char][prev_str] if prev_str in freq3[curr_char]
                                                else 0
                                                )
@@ -131,9 +72,8 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
             for prev_str, prev_freq in prev_str_list:
                 curr_freq = prev_freq * \
                             smoothing3(freq1[curr_char],
-                                       (freq2[curr_char][prev_str[-1]] * freq2[prev_str[-1]][prev_str[-2]])
-                                       if prev_str[-1] in freq2[curr_char] and prev_str[-2] in freq2[prev_str[-1]]
-                                       else 0,
+                                       freq2[curr_char][prev_str[-1]]
+                                       if prev_str[-1] in freq2[curr_char] else 0,
                                        freq3[curr_char][prev_str[-2:]]
                                        if prev_str[-2:] in freq3[curr_char] else 0
                                        )
@@ -145,9 +85,8 @@ def generate_output(pinyin_list, freq1, freq2, freq3, pinyin_dict):
     # the ending empty character
     for curr_str, curr_freq in curr_str_list:
         curr_freq *= smoothing3(1,
-                                (freq2['E'][curr_str[-1]] * freq2[curr_str[-1]][curr_str[-2]])
-                                if curr_str[-1] in freq2['E'] and curr_str[-2] in freq2[curr_str[-1]]
-                                else 0,
+                                freq2['E'][curr_str[-1]]
+                                if curr_str[-1] in freq2['E'] else 0,
                                 freq3['E'][curr_str[-2:]]
                                 if curr_str[-2:] in freq3['E'] else 0
                                 )
@@ -188,6 +127,7 @@ def calc_accuracy(stdout_filename, out_filename):
 
 
 def main(in_filename, out_filename='', stdout_filename='', count_method='sentence'):
+    startTime = time.process_time()
     with open("../../statistics/freq1.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
@@ -205,6 +145,8 @@ def main(in_filename, out_filename='', stdout_filename='', count_method='sentenc
     with open("../../resources/pinyin_charList_dict.json") as pinyin_dict_file:
         pinyin_dict = json.load(pinyin_dict_file)
         pinyin_dict_file.close()
+
+    print("Load statistics data:\t", time.process_time() - startTime, " s")
 
     with open(in_filename) as input_file:
         in_lines = input_file.readlines()
@@ -226,7 +168,8 @@ def main(in_filename, out_filename='', stdout_filename='', count_method='sentenc
         output_file.write(out_str)
         output_file.close()
         if stdout_filename != '':
-            print(calc_accuracy(stdout_filename, out_filename))
+            accuracy = calc_accuracy(stdout_filename, out_filename)
+            print("Accuracy:\n\tCharacter:\t", accuracy[0], ",\tLine:\t", accuracy[1], "\n")
     except:
         print(out_str)
 
@@ -238,3 +181,5 @@ if __name__ == "__main__":
         main(sys.argv[1], sys.argv[2])
     elif len(sys.argv) == 2:
         main(sys.argv[1])
+    else:
+        print("Usage: ", sys.argv[0], " input_file (output_file) (std_output_file)\n")

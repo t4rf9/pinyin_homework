@@ -12,12 +12,10 @@ by the greedy Viterbi algorithm.
 
 import sys
 import json
+import time
 
 
 def smoothing(p1, p2):
-    # sentence s e :    l = 0.08, 0.8       0.3287
-    # sentence s   :    l = 0.08, 0.7986    0.3203
-    # word         :    l = 0.40, 0.7396
     l = 0.08
     return l * p1 + (1 - l) * p2
 
@@ -100,6 +98,7 @@ def calc_accuracy(stdout_filename, out_filename):
 
 
 def main(in_filename, out_filename='', stdout_filename='', count_method='sentence'):
+    startTime = time.process_time()
     with open("../../statistics/freq1.json") as freq1_file:
         freq1 = json.load(freq1_file)
         freq1_file.close()
@@ -112,6 +111,8 @@ def main(in_filename, out_filename='', stdout_filename='', count_method='sentenc
     with open("../../resources/pinyin_charList_dict.json") as pinyin_dict_file:
         pinyin_dict = json.load(pinyin_dict_file)
         pinyin_dict_file.close()
+
+    print("Load statistics data:\t", time.process_time() - startTime, " s")
 
     with open(in_filename) as input_file:
         in_lines = input_file.readlines()
@@ -133,7 +134,8 @@ def main(in_filename, out_filename='', stdout_filename='', count_method='sentenc
         output_file.write(out_str)
         output_file.close()
         if stdout_filename != '':
-            print(calc_accuracy(stdout_filename, out_filename))
+            accuracy = calc_accuracy(stdout_filename, out_filename)
+            print("Accuracy:\n\tCharacter:\t", accuracy[0], ",\tLine:\t", accuracy[1], "\n")
     except:
         print(out_str)
 
@@ -145,3 +147,5 @@ if __name__ == "__main__":
         main(sys.argv[1], sys.argv[2])
     elif len(sys.argv) == 2:
         main(sys.argv[1])
+    else:
+        print("Usage: ", sys.argv[0], " input_file (output_file) (std_output_file)\n")

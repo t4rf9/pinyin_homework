@@ -134,8 +134,12 @@ dmypy.json
 /resources/sina_news_gbk/
 /resources/sina_news/
 /resources/word_list.json
-.DS_Store
-resources/.DS_Store
-src/.DS_Store
+/.DS_Store
+/resources/.DS_Store
+/src/.DS_Store
 /resources/sentence_list.json
 /statistics/*.json
+/document
+/*.pdf
+/*.ppt
+
